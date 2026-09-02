@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  COACH
+  MODERATOR
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role
+  createdAt DateTime @default(now())
+}
+
+model Player {
+  id          String       @id @default(cuid())
+  name        String
+  grade       String
+  position    String
+  status      String       @default("Active")
+  dob         DateTime?
+  photoUrl    String?
+  attendances Attendance[]
+  assessments Assessment[]
+  createdAt   DateTime     @default(now())
+}
+
+model TrainingSession {
+  id          String       @id @default(cuid())
+  date        DateTime
+  day         String
+  focusArea   String
+  time        String
+  court       String
+  coach       String
+  attendances Attendance[]
+  assessments Assessment[]
+  createdAt   DateTime     @default(now())
+
+  @@map("sessions")
+}
+
+model Attendance {
+  id        String          @id @default(cuid())
+  playerId  String
+  player    Player          @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  sessionId String
+  session   TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  status    String // "Present" | "Absent"
+  createdAt DateTime        @default(now())
+
+  @@unique([playerId, sessionId])
+}
+
+model Assessment {
+  id        String          @id @default(cuid())
+  playerId  String
+  player    Player          @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  sessionId String
+  session   TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  week      Int
+  focusArea String
+  skills    Json // { "Ready Position": 4, "Chest Pass": 4, ... } (1-5 scale)
+  avgScore  Float // average of skills, scaled to /100 for trend charts
+  notes     String?
+  createdAt DateTime        @default(now())
+}
