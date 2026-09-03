@@ -3,8 +3,8 @@ import "./globals.css";
 import Providers from "@/components/Providers";
 
 export const metadata: Metadata = {
-  title: "Nova Pioneer Girls Basketball Portfolio",
-  description: "Player tracking and coaching system for Nova Pioneer Girls Basketball",
+  title: "Nova Pioneer Athletics",
+  description: "Player development for Nova Pioneer Basketball",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

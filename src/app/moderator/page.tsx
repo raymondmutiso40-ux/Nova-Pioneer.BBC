@@ -42,9 +42,13 @@ export default async function ModeratorPlayersPage() {
                 <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50">
                   <td className="py-3 px-4">
                     <Link href={`/moderator/players/${p.id}`} className="flex items-center gap-2 font-medium text-navy">
-                      <span className="w-7 h-7 rounded-full bg-gold/30 flex items-center justify-center text-xs font-bold text-navy">
-                        {p.name.split(" ").map((n) => n[0]).join("")}
-                      </span>
+                      {p.photoUrl ? (
+                        <img src={p.photoUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
+                      ) : (
+                        <span className="w-7 h-7 rounded-full bg-gold/30 flex items-center justify-center text-xs font-bold text-navy">
+                          {p.name.split(" ").map((n) => n[0]).join("")}
+                        </span>
+                      )}
                       {p.name}
                     </Link>
                   </td>

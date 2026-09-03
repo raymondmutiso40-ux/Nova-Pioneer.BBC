@@ -41,9 +41,13 @@ export default async function PlayerDetailPage({ params }: { params: { id: strin
 
       <div className="bg-white rounded-xl border border-gray-200 p-5 mt-3 flex justify-between items-start flex-wrap gap-4">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-gold/30 flex items-center justify-center text-xl font-bold text-navy">
-            {player.name.split(" ").map((n) => n[0]).join("")}
-          </div>
+          {player.photoUrl ? (
+            <img src={player.photoUrl} alt={player.name} className="w-16 h-16 rounded-full object-cover" />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-gold/30 flex items-center justify-center text-xl font-bold text-navy">
+              {player.name.split(" ").map((n) => n[0]).join("")}
+            </div>
+          )}
           <div>
             <h1 className="text-xl font-bold text-navy">{player.name}</h1>
             <p className="text-sm text-gray-500">Grade {player.grade} • {player.position}</p>

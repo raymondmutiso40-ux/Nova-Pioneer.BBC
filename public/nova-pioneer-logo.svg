@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 210" role="img" aria-labelledby="title desc">
+  <title id="title">Nova Pioneer</title>
+  <desc id="desc">Nova Pioneer Schools for Innovators and Leaders</desc>
+  <rect width="760" height="210" fill="#ffffff"/>
+  <g transform="translate(28 24)">
+    <path d="M82 0 142 35v70l-60 35-60-35V35z" fill="#f49a12"/>
+    <path d="M82 0v35L22 70V35z" fill="#1262a3"/>
+    <path d="M22 35v70l60 35v-35L52 87V53z" fill="#249329"/>
+    <path d="M82 35v105l60-35V35l-30 18v70l-30 17z" fill="#153a78"/>
+    <path d="m82 0 60 35-30 18-30-18z" fill="#f17812"/>
+    <path d="m142 35-60 35v35l60-35z" fill="#ffb516"/>
+  </g>
+  <text x="198" y="98" fill="#101b5b" font-family="Arial, sans-serif" font-size="52" font-weight="700" letter-spacing="1">NOVA PIONEER</text>
+  <text x="200" y="137" fill="#101b5b" font-family="Arial, sans-serif" font-size="21" font-weight="700" letter-spacing="1">SCHOOLS FOR INNOVATORS &amp; LEADERS</text>
+</svg>

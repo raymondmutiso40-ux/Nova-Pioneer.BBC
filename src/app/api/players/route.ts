@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
   if (error) return error;
 
   const body = await req.json();
-  const { name, grade, position, status, dob } = body;
+  const { name, grade, position, status, dob, photoUrl } = body;
 
   if (!name || !grade || !position) {
     return NextResponse.json({ error: "name, grade, and position are required" }, { status: 400 });
@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
       position,
       status: status || "Active",
       dob: dob ? new Date(dob) : undefined,
+      photoUrl: typeof photoUrl === "string" ? photoUrl : undefined,
     },
   });
 

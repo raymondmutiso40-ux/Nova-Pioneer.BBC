@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAnyRole } from "@/lib/apiAuth";
 import { renderToBuffer } from "@react-pdf/renderer";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Svg, Line as SvgLine, Polyline, Circle } from "@react-pdf/renderer";
 import React from "react";
 
 const styles = StyleSheet.create({
@@ -19,6 +19,9 @@ const styles = StyleSheet.create({
   tableHeader: { flexDirection: "row", backgroundColor: "#0b1e3d", color: "#fff", padding: 6 },
   tableRow: { flexDirection: "row", padding: 6, borderBottom: "1px solid #eee" },
   cell: { flex: 1, fontSize: 9 },
+  chart: { border: "1px solid #eee", padding: 10, marginTop: 4 },
+  graph: { border: "1px solid #eee", padding: 10, marginTop: 4 },
+  graphLegend: { fontSize: 8, color: "#666", marginTop: 4 },
   footer: { marginTop: 24, fontSize: 8, color: "#999", textAlign: "center" },
 });
 
@@ -30,7 +33,7 @@ export async function GET(req: NextRequest, { params }: { params: { playerId: st
     where: { id: params.playerId },
     include: {
       assessments: { orderBy: { week: "asc" }, include: { session: true } },
-      attendances: true,
+      attendances: { include: { session: true }, orderBy: { createdAt: "desc" } },
     },
   });
 
@@ -50,6 +53,20 @@ export async function GET(req: NextRequest, { params }: { params: { playerId: st
     (best, a) => (a.avgScore > (best?.avgScore ?? 0) ? a : best),
     player.assessments[0]
   );
+  const graphWidth = 500;
+  const graphHeight = 130;
+  const graphLeft = 32;
+  const graphRight = 490;
+  const graphTop = 10;
+  const graphBottom = 108;
+  const graphPoints = player.assessments.map((assessment, index) => {
+    const x = player.assessments.length === 1
+      ? (graphLeft + graphRight) / 2
+      : graphLeft + (index * (graphRight - graphLeft)) / (player.assessments.length - 1);
+    const score = Math.max(40, Math.min(100, assessment.avgScore));
+    const y = graphBottom - ((score - 40) / 60) * (graphBottom - graphTop);
+    return { x, y, week: assessment.week, score: Math.round(assessment.avgScore) };
+  });
 
   const doc = React.createElement(
     Document,
@@ -60,7 +77,7 @@ export async function GET(req: NextRequest, { params }: { params: { playerId: st
       React.createElement(
         View,
         { style: styles.header },
-        React.createElement(Text, { style: styles.headerTitle }, "NOVA PIONEER GIRLS BASKETBALL"),
+        React.createElement(Text, { style: styles.headerTitle }, "NOVA PIONEER BASKETBALL"),
         React.createElement(Text, { style: styles.headerSub }, "Confidential Player Development Report")
       ),
       React.createElement(
@@ -107,6 +124,41 @@ export async function GET(req: NextRequest, { params }: { params: { playerId: st
         React.createElement(Text, { style: styles.sectionTitle }, "Weekly Assessment History"),
         React.createElement(
           View,
+          { style: styles.graph },
+          React.createElement(Text, { style: { fontSize: 9, color: "#0b1e3d", marginBottom: 4 } }, "Performance by Week (average skill score)"),
+          player.assessments.length > 0
+            ? React.createElement(
+                Svg,
+                { width: graphWidth, height: graphHeight, viewBox: `0 0 ${graphWidth} ${graphHeight}` },
+                ...[40, 70, 100].map((value) => {
+                  const y = graphBottom - ((value - 40) / 60) * (graphBottom - graphTop);
+                  return React.createElement(
+                    SvgLine,
+                    { key: `grid-${value}`, x1: graphLeft, y1: y, x2: graphRight, y2: y, stroke: "#dfe3ea", strokeWidth: 1 }
+                  );
+                }),
+                React.createElement(SvgLine, { x1: graphLeft, y1: graphTop, x2: graphLeft, y2: graphBottom, stroke: "#0b1e3d", strokeWidth: 1 }),
+                React.createElement(SvgLine, { x1: graphLeft, y1: graphBottom, x2: graphRight, y2: graphBottom, stroke: "#0b1e3d", strokeWidth: 1 }),
+                React.createElement(Polyline, {
+                  points: graphPoints.map((point) => `${point.x},${point.y}`).join(" "),
+                  fill: "none",
+                  stroke: "#d4a83f",
+                  strokeWidth: 3,
+                }),
+                ...graphPoints.flatMap((point) => [
+                  React.createElement(Circle, { key: `point-${point.week}`, cx: point.x, cy: point.y, r: 4, fill: "#d4a83f", stroke: "#0b1e3d", strokeWidth: 1 }),
+                  React.createElement(Text, { key: `label-${point.week}`, x: point.x - 8, y: graphBottom + 16, style: { fontSize: 8, fill: "#666" } }, `W${point.week}`),
+                ]),
+                ...[40, 70, 100].map((value) => {
+                  const y = graphBottom - ((value - 40) / 60) * (graphBottom - graphTop) + 3;
+                  return React.createElement(Text, { key: `axis-${value}`, x: 2, y, style: { fontSize: 8, fill: "#666" } }, `${value}`);
+                })
+              )
+            : React.createElement(Text, { style: { fontSize: 9, color: "#999" } }, "No assessments recorded"),
+          React.createElement(Text, { style: styles.graphLegend }, "Higher scores indicate stronger performance.")
+        ),
+        React.createElement(
+          View,
           { style: styles.tableHeader },
           React.createElement(Text, { style: styles.cell }, "Week"),
           React.createElement(Text, { style: styles.cell }, "Focus Area"),
@@ -121,6 +173,25 @@ export async function GET(req: NextRequest, { params }: { params: { playerId: st
             React.createElement(Text, { style: styles.cell }, a.focusArea),
             React.createElement(Text, { style: styles.cell }, `${a.avgScore}`),
             React.createElement(Text, { style: styles.cell }, a.notes || "-")
+          )
+        )
+      ),
+      React.createElement(
+        View,
+        { style: styles.section },
+        React.createElement(Text, { style: styles.sectionTitle }, "Attendance History"),
+        React.createElement(
+          View,
+          { style: styles.tableHeader },
+          React.createElement(Text, { style: styles.cell }, "Date"),
+          React.createElement(Text, { style: styles.cell }, "Status")
+        ),
+        ...player.attendances.map((a) =>
+          React.createElement(
+            View,
+            { style: styles.tableRow, key: `attendance-${a.id}` },
+            React.createElement(Text, { style: styles.cell }, new Date(a.session.date).toLocaleDateString()),
+            React.createElement(Text, { style: styles.cell }, a.status)
           )
         )
       ),

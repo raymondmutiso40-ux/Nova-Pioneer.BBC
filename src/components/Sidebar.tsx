@@ -34,13 +34,11 @@ export default function Sidebar({
     <aside className="w-64 bg-navy text-white min-h-screen flex flex-col shrink-0">
       <div className="px-5 py-6 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-full border-2 border-gold flex items-center justify-center text-gold font-bold text-sm">
-            NP
-          </div>
+          <img src="/nova-pioneer-logo.svg" alt="Nova Pioneer" className="w-10 h-10 rounded-full object-cover" />
           <div>
             <p className="font-bold text-sm leading-tight">NOVA PIONEER</p>
             <p className="text-[11px] text-gold-light leading-tight">
-              {role === "COACH" ? "Girls Basketball Portfolio" : "Moderator Portal"}
+              {role === "COACH" ? "Basketball Portfolio" : "Moderator Portal"}
             </p>
           </div>
         </div>

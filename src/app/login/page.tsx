@@ -31,13 +31,11 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-navy px-4">
       <div className="w-full max-w-sm bg-white rounded-xl shadow-xl p-8">
         <div className="flex flex-col items-center mb-6">
-          <div className="w-14 h-14 rounded-full bg-navy flex items-center justify-center text-gold text-2xl font-bold border-2 border-gold">
-            NP
-          </div>
+          <img src="/nova-pioneer-logo.svg" alt="Nova Pioneer" className="w-48 h-auto" />
           <h1 className="mt-4 text-lg font-bold text-navy text-center">
             NOVA PIONEER
           </h1>
-          <p className="text-xs text-gray-500 text-center">Girls Basketball Portfolio</p>
+          <p className="text-xs text-gray-500 text-center">Basketball Portfolio</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

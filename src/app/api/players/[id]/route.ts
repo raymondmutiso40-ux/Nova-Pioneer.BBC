@@ -31,6 +31,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       position: body.position,
       status: body.status,
       dob: body.dob ? new Date(body.dob) : undefined,
+      photoUrl: typeof body.photoUrl === "string" ? body.photoUrl : undefined,
     },
   });
 

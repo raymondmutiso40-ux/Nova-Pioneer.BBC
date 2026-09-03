@@ -9,13 +9,15 @@ type Player = {
   grade: string;
   position: string;
   status: string;
+  photoUrl?: string | null;
 };
 
 export default function PlayersTable({ initialPlayers }: { initialPlayers: Player[] }) {
   const [players, setPlayers] = useState(initialPlayers);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ name: "", grade: "", position: "", status: "Active" });
+  const [form, setForm] = useState({ name: "", grade: "", position: "", status: "Active", photoUrl: "" });
+  const [photoName, setPhotoName] = useState("");
   const [saving, setSaving] = useState(false);
 
   const filtered = players.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()));
@@ -33,7 +35,8 @@ export default function PlayersTable({ initialPlayers }: { initialPlayers: Playe
       const newPlayer = await res.json();
       setPlayers([...players, newPlayer]);
       setShowForm(false);
-      setForm({ name: "", grade: "", position: "", status: "Active" });
+      setForm({ name: "", grade: "", position: "", status: "Active", photoUrl: "" });
+      setPhotoName("");
     }
   }
 
@@ -86,6 +89,22 @@ export default function PlayersTable({ initialPlayers }: { initialPlayers: Playe
             <option>Active</option>
             <option>Inactive</option>
           </select>
+          <label className="col-span-2 md:col-span-4 border border-dashed border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-500 cursor-pointer">
+            Student photo {photoName && `— ${photoName}`}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setPhotoName(file.name);
+                const reader = new FileReader();
+                reader.onload = () => setForm((current) => ({ ...current, photoUrl: String(reader.result) }));
+                reader.readAsDataURL(file);
+              }}
+            />
+          </label>
           <button
             type="submit"
             disabled={saving}
@@ -110,9 +129,13 @@ export default function PlayersTable({ initialPlayers }: { initialPlayers: Playe
             <tr key={p.id} className="border-b border-gray-50 hover:bg-gray-50">
               <td className="py-3">
                 <Link href={`/coach/players/${p.id}`} className="flex items-center gap-2 font-medium text-navy">
-                  <span className="w-7 h-7 rounded-full bg-gold/30 flex items-center justify-center text-xs font-bold text-navy">
-                    {p.name.split(" ").map((n) => n[0]).join("")}
-                  </span>
+                  {p.photoUrl ? (
+                    <img src={p.photoUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
+                  ) : (
+                    <span className="w-7 h-7 rounded-full bg-gold/30 flex items-center justify-center text-xs font-bold text-navy">
+                      {p.name.split(" ").map((n) => n[0]).join("")}
+                    </span>
+                  )}
                   {p.name}
                 </Link>
               </td>
