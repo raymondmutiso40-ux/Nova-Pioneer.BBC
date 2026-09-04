@@ -18,6 +18,7 @@ export default function NewAssessmentForm({
   const [playerId, setPlayerId] = useState(players[0]?.id || "");
   const [sessionId, setSessionId] = useState(sessions[0]?.id || "");
   const [notes, setNotes] = useState("");
+  const [customSkill, setCustomSkill] = useState("");
   const [saving, setSaving] = useState(false);
 
   const session = sessions.find((s) => s.id === sessionId);
@@ -32,6 +33,14 @@ export default function NewAssessmentForm({
     const s = sessions.find((x) => x.id === id);
     const skills = skillsForFocusArea(s?.focusArea || "");
     setRatings(Object.fromEntries(skills.map((sk) => [sk, 4])));
+    setCustomSkill("");
+  }
+
+  function addSkill() {
+    const skill = customSkill.trim();
+    if (!skill || skill in ratings) return;
+    setRatings({ ...ratings, [skill]: 4 });
+    setCustomSkill("");
   }
 
   async function submit(e: React.FormEvent) {
@@ -126,6 +135,29 @@ export default function NewAssessmentForm({
               </div>
             </div>
           ))}
+          {Object.keys(ratings).filter((skill) => !skillList.includes(skill)).map((skill) => (
+            <div key={skill} className="flex items-center justify-between">
+              <span className="text-sm text-navy">{skill} <span className="text-xs text-gray-400">(custom)</span></span>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button type="button" key={star} onClick={() => setRatings({ ...ratings, [skill]: star })} className={`text-lg ${star <= ratings[skill] ? "text-gold" : "text-gray-200"}`}>★</button>
+                  ))}
+                </div>
+                <button type="button" onClick={() => { const next = { ...ratings }; delete next[skill]; setRatings(next); }} className="text-xs text-red-600 hover:underline">Remove</button>
+              </div>
+            </div>
+          ))}
+          <div className="flex gap-2 pt-1">
+            <input
+              value={customSkill}
+              onChange={(e) => setCustomSkill(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addSkill(); } }}
+              placeholder="Add another skill"
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            />
+            <button type="button" onClick={addSkill} className="border border-navy text-navy text-sm font-semibold px-3 rounded-lg">Add</button>
+          </div>
         </div>
       </div>
 

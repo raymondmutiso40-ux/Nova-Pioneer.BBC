@@ -16,6 +16,7 @@ export default function PlayersTable({ initialPlayers }: { initialPlayers: Playe
   const [players, setPlayers] = useState(initialPlayers);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ name: "", grade: "", position: "", status: "Active", photoUrl: "" });
   const [photoName, setPhotoName] = useState("");
   const [saving, setSaving] = useState(false);
@@ -40,6 +41,43 @@ export default function PlayersTable({ initialPlayers }: { initialPlayers: Playe
     }
   }
 
+  function startEditing(player: Player) {
+    setEditingId(player.id);
+    setForm({ name: player.name, grade: player.grade, position: player.position, status: player.status, photoUrl: player.photoUrl || "" });
+    setShowForm(false);
+  }
+
+  async function savePlayer(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    const res = await fetch(`/api/players/${editingId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form),
+    });
+    setSaving(false);
+    if (res.ok) {
+      const updated = await res.json();
+      setPlayers(players.map((player) => (player.id === updated.id ? updated : player)));
+      setEditingId(null);
+      setForm({ name: "", grade: "", position: "", status: "Active", photoUrl: "" });
+      setPhotoName("");
+    }
+  }
+
+  async function deletePlayer(player: Player) {
+    if (!window.confirm(`Delete ${player.name}? This also removes their attendance and assessments.`)) return;
+    const res = await fetch(`/api/players/${player.id}`, { method: "DELETE" });
+    if (res.ok) setPlayers(players.filter((item) => item.id !== player.id));
+  }
+
+  function closeForm() {
+    setShowForm(false);
+    setEditingId(null);
+    setForm({ name: "", grade: "", position: "", status: "Active", photoUrl: "" });
+    setPhotoName("");
+  }
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5">
       <div className="flex justify-between items-center mb-4">
@@ -51,15 +89,15 @@ export default function PlayersTable({ initialPlayers }: { initialPlayers: Playe
           className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-gold"
         />
         <button
-          onClick={() => setShowForm(!showForm)}
+          onClick={() => { closeForm(); setShowForm(!showForm); }}
           className="bg-gold hover:bg-gold-dark text-navy text-sm font-semibold px-4 py-2 rounded-lg"
         >
           + Add Player
         </button>
       </div>
 
-      {showForm && (
-        <form onSubmit={addPlayer} className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5 bg-gray-50 p-4 rounded-lg">
+      {(showForm || editingId) && (
+        <form onSubmit={editingId ? savePlayer : addPlayer} className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5 bg-gray-50 p-4 rounded-lg">
           <input
             required
             placeholder="Name"
@@ -110,7 +148,10 @@ export default function PlayersTable({ initialPlayers }: { initialPlayers: Playe
             disabled={saving}
             className="col-span-2 md:col-span-4 bg-navy text-white text-sm font-semibold py-2 rounded-lg disabled:opacity-60"
           >
-            {saving ? "Saving..." : "Save Player"}
+            {saving ? "Saving..." : editingId ? "Update Player" : "Save Player"}
+          </button>
+          <button type="button" onClick={closeForm} className="col-span-2 md:col-span-4 text-sm text-gray-500 hover:text-gray-700">
+            Cancel
           </button>
         </form>
       )}
@@ -122,6 +163,7 @@ export default function PlayersTable({ initialPlayers }: { initialPlayers: Playe
             <th className="py-2">Grade</th>
             <th className="py-2">Position</th>
             <th className="py-2">Status</th>
+            <th className="py-2 text-right">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -149,6 +191,10 @@ export default function PlayersTable({ initialPlayers }: { initialPlayers: Playe
                 >
                   {p.status}
                 </span>
+              </td>
+              <td className="py-3 text-right whitespace-nowrap">
+                <button onClick={() => startEditing(p)} className="text-xs font-semibold text-navy hover:underline mr-3">Edit</button>
+                <button onClick={() => deletePlayer(p)} className="text-xs font-semibold text-red-600 hover:underline">Delete</button>
               </td>
             </tr>
           ))}

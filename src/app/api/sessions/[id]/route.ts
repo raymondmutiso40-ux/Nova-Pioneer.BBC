@@ -15,6 +15,23 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   return NextResponse.json(session);
 }
 
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+  const { error } = await requireCoach();
+  if (error) return error;
+
+  const body = await req.json();
+  const { date, day, focusArea, time, court, coach } = body;
+  if (!date || !day || !focusArea || !time || !court || !coach) {
+    return NextResponse.json({ error: "All session fields are required" }, { status: 400 });
+  }
+
+  const session = await prisma.trainingSession.update({
+    where: { id: params.id },
+    data: { date: new Date(date), day, focusArea, time, court, coach },
+  });
+  return NextResponse.json(session);
+}
+
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   const { error } = await requireCoach();
   if (error) return error;
